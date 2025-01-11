@@ -221,10 +221,6 @@ void ssd1306_DrawPixel(uint8_t x, uint8_t y, SSD1306_COLOR color) {
 char ssd1306_WriteChar(char ch, SSD1306_Font_t Font, SSD1306_COLOR color) {
     uint32_t i, b, j;
     
-    // Check if character is valid
-    if (ch < 32 || ch > 126)
-        return 0;
-    
     // Check remaining space on current line
     if (SSD1306_WIDTH < (SSD1306.CurrentX + Font.width) ||
         SSD1306_HEIGHT < (SSD1306.CurrentY + Font.height))
@@ -233,9 +229,14 @@ char ssd1306_WriteChar(char ch, SSD1306_Font_t Font, SSD1306_COLOR color) {
         return 0;
     }
     
+    uint8_t sh = 0;
+    if(Font.width > 16)
+    	sh = 1;
+    
     // Use the font to write
     for(i = 0; i < Font.height; i++) {
-        b = Font.data[(ch - 32) * Font.height + i];
+    	uint16_t idx = (ch - 32) * Font.height + i;
+        b = Font.data[idx<<sh];
         for(j = 0; j < Font.width; j++) {
             if((b << j) & 0x8000)  {
                 ssd1306_DrawPixel(SSD1306.CurrentX + j, (SSD1306.CurrentY + i), (SSD1306_COLOR) color);
